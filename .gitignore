@@ -3,6 +3,8 @@
 .ipynb_checkpoints/
 __pycache__/
 *.py[cod]
+/legacy_country_data.xlsx
+/legacy_route_data_daily.csv
 modern_pipeline/cache/
 modern_pipeline/downloads/
 modern_pipeline/snapshots/.matplotlib/
