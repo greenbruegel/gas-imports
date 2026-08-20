@@ -311,6 +311,47 @@ net-flow panel. Use:
 
 Other Figure 1 source groups use `flowConcept=gross_import`.
 
+## Weekly Server Update
+
+For a safe unattended weekly update, use the wrapper script:
+
+```bash
+python3 -m modern_pipeline.scripts.run_weekly_update --write
+```
+
+The wrapper:
+
+- fetches recent ENTSOG and GIE raw rows with upserts;
+- uses a default 3-day source-data lag;
+- rebuilds the last 5 complete ISO weeks in `gas_import_daily`;
+- materializes only through the latest complete Sunday;
+- purges any already-materialized partial-week rows after that Sunday.
+
+This avoids a frontend naively plotting a latest week that only has one or two
+days of data.
+
+Plan without touching APIs or MongoDB:
+
+```bash
+python3 -m modern_pipeline.scripts.run_weekly_update --plan-only
+```
+
+Dry-run the child jobs:
+
+```bash
+python3 -m modern_pipeline.scripts.run_weekly_update --dry-run
+```
+
+Recommended cron timing is Thursday morning. With the default 3-day lag, a
+Thursday run can fetch through Monday and materialize through the immediately
+preceding Sunday, so the latest published week is complete.
+
+Example Linux cron:
+
+```cron
+0 6 * * 4 cd /path/to/gas-imports && /usr/bin/env bash -lc 'python3 -m modern_pipeline.scripts.run_weekly_update --write >> logs/weekly_update.log 2>&1'
+```
+
 ## Build GIE ALSI LNG Terminal Manifest
 
 Build the first broad LNG terminal manifest from ALSI's live listing endpoint:
