@@ -7,4 +7,6 @@ __pycache__/
 /legacy_route_data_daily.csv
 modern_pipeline/cache/
 modern_pipeline/downloads/
-modern_pipeline/snapshots/.matplotlib/
+modern_pipeline/gas_quality_adjustment.md
+modern_pipeline/manifest_versions.md
+modern_pipeline/snapshots/
