@@ -1,5 +1,6 @@
 .env
 .DS_Store
+.ipynb_checkpoints/
 __pycache__/
 *.py[cod]
 modern_pipeline/cache/
