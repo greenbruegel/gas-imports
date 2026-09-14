@@ -23,6 +23,7 @@ PIPELINE_PARTNERS = {
     "UK": "UK",
     "AZ": "Azerbaijan",
     "DZ": "Algeria",
+    "LY": "Libya",
 }
 LNG_PARTNER = "TOTAL"
 

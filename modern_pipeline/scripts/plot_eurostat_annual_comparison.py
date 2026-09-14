@@ -20,13 +20,14 @@ DEFAULT_EUROSTAT_JSON = Path("modern_pipeline/snapshots/eurostat_nrg_ti_gas_eu27
 DEFAULT_OUTPUT_DIR = Path("modern_pipeline/snapshots")
 DEFAULT_PIPELINE_MANIFEST_VERSION = "legacy_excel_v3"
 DEFAULT_LNG_MANIFEST_VERSION = "gie_alsi_lng_terminals_v2"
-SOURCE_ORDER = ["Russia", "Norway", "UK", "Azerbaijan", "Algeria", "LNG"]
+SOURCE_ORDER = ["Russia", "Norway", "UK", "Azerbaijan", "Algeria", "Libya", "LNG"]
 SOURCE_COLORS = {
     "Russia": "#b3261e",
     "Norway": "#1261a6",
     "UK": "#6b7280",
     "Azerbaijan": "#0f8b8d",
     "Algeria": "#d18400",
+    "Libya": "#92400e",
     "LNG": "#7c3aed",
 }
 

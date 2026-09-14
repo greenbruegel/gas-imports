@@ -19,7 +19,7 @@ from modern_pipeline.db import get_database
 DEFAULT_MANIFEST_VERSION = "legacy_excel_v3"
 DEFAULT_LNG_MANIFEST_VERSION = "gie_alsi_lng_terminals_v2"
 DEFAULT_OUTPUT_DIR = Path("modern_pipeline/snapshots")
-SOURCE_ORDER = ["Total", "Russia", "Norway", "UK", "Azerbaijan", "Algeria", "LNG"]
+SOURCE_ORDER = ["Total", "Russia", "Norway", "UK", "Azerbaijan", "Algeria", "Libya", "LNG"]
 SOURCE_COLORS = {
     "Total": "#222222",
     "Russia": "#b3261e",
@@ -27,6 +27,7 @@ SOURCE_COLORS = {
     "UK": "#6b7280",
     "Azerbaijan": "#0f8b8d",
     "Algeria": "#d18400",
+    "Libya": "#92400e",
     "LNG": "#7c3aed",
 }
 

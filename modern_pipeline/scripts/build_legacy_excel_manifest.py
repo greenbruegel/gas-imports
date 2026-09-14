@@ -14,7 +14,7 @@ from modern_pipeline.db import get_database
 
 DEFAULT_LEGACY_LOCATIONS = Path("working data/locationsSAFE.xlsx")
 DEFAULT_VERSION = "legacy_excel_v1"
-DEFAULT_SOURCE_GROUPS = ("Russia", "Norway", "UK", "Azerbaijan", "Algeria")
+DEFAULT_SOURCE_GROUPS = ("Russia", "Norway", "UK", "Azerbaijan", "Algeria", "Libya")
 DEFAULT_CONVERTER_KWH_PER_MCM = 10_300_000.0
 LEGACY_V4_NORWAY_CONVERTER_KWH_PER_MCM = 11_000_000.0
 SOURCE_GCV_KWH_PER_M3 = {
@@ -140,7 +140,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--include-libya",
         action="store_true",
-        help="Also include legacy Libya pipeline rows.",
+        help=(
+            "Also include legacy Libya pipeline rows (Gela / Greenstream). "
+            "Libya is already in the default Figure 1 source groups."
+        ),
     )
     parser.add_argument(
         "--include-all-pipeline",

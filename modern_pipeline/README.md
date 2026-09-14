@@ -2,6 +2,20 @@
 
 Initial replacement pipeline for European gas import data.
 
+## Published versions
+
+The live Figure 1 stack is:
+
+| Series | Version | What it is |
+| --- | --- | --- |
+| ENTSOG pipeline | `legacy_excel_v4` | Extra-EU pipeline imports by source: Russia, Norway, UK, Azerbaijan, Algeria, and Libya (Gela / Greenstream). Same point selection as v3; Norway uses 11.0 kWh/m3, other pipeline sources use the legacy 10.3. |
+| GIE ALSI LNG send-out | `gie_alsi_lng_terminals_v2` | Terminal send-out volumes for the Figure 1 LNG panel. v2 drops Spain's TVB virtual tank. |
+| Bloomberg LNG origin | unversioned `bloomberg_lng_monthly` | Monthly cargo origin and region totals. Not a numbered manifest, and not a substitute for ALSI send-out. |
+
+`run_weekly_update` materializes the two manifests into `gas_import_daily`. Bloomberg is a separate monthly build from Excel dumps.
+
+Earlier `legacy_excel_v1`–`v3` and `gie_alsi_lng_terminals_v1` stay in Mongo for comparison. Some standalone scripts still default to those older versions; pass `--manifest-version` / `--lng-manifest-version`, or use the weekly updater.
+
 For the detailed differences between `legacy_excel_v1`, `legacy_excel_v2`, and
 `legacy_excel_v3`, see [manifest_versions.md](manifest_versions.md).
 For the source-specific gas-quality conversion values, see
@@ -140,7 +154,9 @@ python3 -m modern_pipeline.scripts.build_legacy_excel_manifest --write
 
 By default this creates `legacy_excel_v1` from `locationsSAFE.xlsx`, excludes LNG,
 excludes imports into the UK, and keeps the Figure 1 source buckets: Russia,
-Norway, UK, Azerbaijan, and Algeria.
+Norway, UK, Azerbaijan, Algeria, and Libya. The ENTSOG fetch universe already
+includes Gela (`ITP-00074`); Libya is selected into the published series by
+these source groups, not by a separate download.
 
 For a closer reproduction of the downloaded Figure 1 workbook, build
 `legacy_excel_v2`. This keeps the v1 rows but marks known duplicate/legacy
@@ -152,7 +168,7 @@ python3 -m modern_pipeline.scripts.build_legacy_excel_manifest \
   --write
 ```
 
-For the current clean pipeline manifest, build `legacy_excel_v3`. This keeps
+For a GCV-adjusted pipeline manifest, build `legacy_excel_v3`. This keeps
 the v2 compatibility choices, adds source-specific GCV conversion factors from
 ENTSOG's Gas Quality Outlook 2024, and adds a time-bounded Norway archive alias:
 
@@ -162,7 +178,7 @@ python3 -m modern_pipeline.scripts.build_legacy_excel_manifest \
   --write
 ```
 
-For the current Figure 1 compatibility candidate, build `legacy_excel_v4`. This
+For the published Figure 1 pipeline manifest, build `legacy_excel_v4`. This
 keeps the v3 point selection and UK net-flow logic, but uses the legacy `10.3`
 conversion for non-Norway pipeline sources and `11.0` for Norway, matching the
 Gassco official BCM/TWh convention much more closely:
@@ -192,7 +208,7 @@ The output CSV is a review surface for pointDirection decisions, not the final m
 
 ## Fetch Raw ENTSOG Observations
 
-Build a broad pointDirection universe from modern candidates plus legacy ITP selections, then fetch physical-flow daily observations.
+Build a broad pointDirection universe from modern candidates plus legacy ITP selections, then fetch physical-flow daily observations. That universe already includes Libya's Gela landing (`it-tso-0001itp-00074entry`); the published v4 manifest now selects it into the Libya source group.
 
 Plan only:
 
@@ -323,7 +339,8 @@ The wrapper:
 
 - fetches recent ENTSOG and GIE raw rows with upserts;
 - uses a default 3-day source-data lag;
-- rebuilds the last 5 complete ISO weeks in `gas_import_daily`;
+- rebuilds the last 5 complete ISO weeks in `gas_import_daily` using
+  `legacy_excel_v4` and `gie_alsi_lng_terminals_v2`;
 - materializes only through the latest complete Sunday;
 - purges any already-materialized partial-week rows after that Sunday.
 
@@ -426,7 +443,7 @@ The initial `gie_alsi_lng_terminals_v1` version includes all listed ALSI
 facilities, so comparison with legacy LNG data should be used to decide the v2
 exclusions for virtual, historical, or otherwise duplicate terminal rows.
 
-For the first legacy-compatible LNG manifest, build `gie_alsi_lng_terminals_v2`.
+For the published LNG send-out manifest, build `gie_alsi_lng_terminals_v2`.
 This excludes Spain's TVB virtual balancing LNG tank while preserving the raw
 facility in v1:
 
@@ -439,6 +456,110 @@ python3 -m modern_pipeline.scripts.build_gie_lng_terminal_manifest \
 `gie_alsi_lng_terminals_v2` also stores the LNG GCV conversion from ENTSOG's Gas
 Quality Outlook 2024. The LNG materialiser uses the manifest converter when
 building `valueMcm`.
+
+## Build Bloomberg LNG Origin Monthly Series
+
+This series is unversioned. It is the published cargo-origin companion to ALSI
+send-out, written to `bloomberg_lng_monthly`, not a `v2` manifest.
+
+ALSI send-out does not include cargo origin. Bloomberg terminal Excel dumps do.
+Drop the year-split `.xlsx` files into `modern_pipeline/input/bloomberg_lng/`,
+then:
+
+```bash
+python3 -m modern_pipeline.scripts.build_bloomberg_lng_monthly
+```
+
+The script reads year-split Bloomberg Excel dumps in
+`modern_pipeline/input/bloomberg_lng/` (`2015-16.xlsx`, `2017-18.xlsx`, …).
+Those files are destination-side discharges: `Port_Country` is the destination,
+`Origin_Berthcountry` is the origin, and values are negative tonnes. The reader
+takes the absolute value and converts with the legacy factor `0.00138` mcm per
+tonne. Older load-port `flows_*` dumps in `export/` or `exports/` are ignored.
+When month/origin/destination cells overlap, discharge layout beats load-port,
+and the later-ending file wins (so `2024-26.xlsx` overrides overlapping months
+in `2023-24.xlsx`). It keeps EU27 destinations and writes two published series:
+
+```text
+modern_pipeline/output/bloomberg_lng/eu27_monthly_by_origin.csv
+modern_pipeline/output/bloomberg_lng/eu27_monthly_by_region.csv
+modern_pipeline/output/bloomberg_lng/eu27_monthly_by_region.xlsx
+```
+
+The long country file and the wide region file both use the Bloomberg dumps
+from January 2017 onward (`--series-start`). The lone December 2016 month in
+`2015-16.xlsx` is dropped. The current calendar month is also dropped until it
+has fully completed, so a mid-month extract is not published as a finished
+value. Pass `--as-of YYYY-MM-DD` to override today's date. Pass
+`--fresh-from YYYY-MM-DD` to splice `LNG plot data *.xlsx` before that date.
+Destinations are EU27; region buckets match the published chart (America,
+Africa, Middle East, Russia, Other).
+Destination-pair rows and build metadata stay in `modern_pipeline/snapshots/`
+for debugging.
+
+Dry-run without writing:
+
+```bash
+python3 -m modern_pipeline.scripts.build_bloomberg_lng_monthly --dry-run
+```
+
+Write the regional months to MongoDB `gas_imports.bloomberg_lng_monthly`
+(one document per month, `values` keyed by region, `totalMcm` in million cubic
+metres):
+
+```bash
+python3 -m modern_pipeline.scripts.build_bloomberg_lng_monthly --write
+```
+
+Frontend query:
+
+```js
+db.bloomberg_lng_monthly.find({}, { month: 1, values: 1, totalMcm: 1, _id: 0 }).sort({ month: 1 })
+```
+
+Monthly cron, after replacing the Bloomberg Excel dumps in
+`modern_pipeline/input/bloomberg_lng/`:
+
+```cron
+0 6 3 * * cd /path/to/gas-imports && /usr/bin/env bash -lc 'python3 -m modern_pipeline.scripts.build_bloomberg_lng_monthly --write >> logs/bloomberg_lng_monthly.log 2>&1'
+```
+
+## Compare Bloomberg LNG Origin Monthly Series
+
+Drop the old Europe LNG Excel dumps into
+`modern_pipeline/input/bloomberg_lng_legacy/`, or pass a pre-aggregated
+`granular LNG imports.xlsx`:
+
+```bash
+python3 -m modern_pipeline.scripts.compare_bloomberg_lng_monthly
+```
+
+```bash
+python3 -m modern_pipeline.scripts.compare_bloomberg_lng_monthly \
+  --legacy-workbook path/to/granular\ LNG\ imports.xlsx
+```
+
+The comparison uses overlapping months only, after both sides have been filtered
+to EU27 destinations and collapsed to the named-origin groups. It writes:
+
+```text
+modern_pipeline/snapshots/bloomberg_lng_monthly_comparison.csv
+modern_pipeline/snapshots/bloomberg_lng_monthly_comparison_annual.csv
+modern_pipeline/snapshots/bloomberg_lng_monthly_comparison_lines.png
+modern_pipeline/snapshots/bloomberg_lng_monthly_comparison_differences.png
+```
+
+## Compare Bloomberg LNG Region Monthly Series
+
+Compare the published `LNG plot data` workbook with the modern region series
+over overlapping months:
+
+```bash
+python3 -m modern_pipeline.scripts.compare_bloomberg_lng_regions
+```
+
+It writes a CSV plus line and difference small-multiples (five regions plus
+total) to `modern_pipeline/snapshots`.
 
 ## Compare And Plot Pipeline Plus LNG
 
@@ -453,6 +574,9 @@ python3 -m modern_pipeline.scripts.compare_legacy_country_data \
   --year 2023 \
   --year 2024
 ```
+
+That writes per-source CSVs and plots under
+`modern_pipeline/snapshots/legacy_country_data/`, including UK gross and net.
 
 Generate quick combined Figure 1-style diagnostics:
 
@@ -480,7 +604,7 @@ python3 -m modern_pipeline.scripts.plot_figure1_diagnostic \
 
 Fetch a compact annual Eurostat `nrg_ti_gas` snapshot for EU27_2020 imports in
 million cubic metres. Pipeline sources use `siec=G3000` and partners
-`NO/RU/UK/AZ/DZ`; LNG uses `siec=G3200` and `partner=TOTAL`.
+`NO/RU/UK/AZ/DZ/LY`; LNG uses `siec=G3200` and `partner=TOTAL`.
 
 ```bash
 python3 -m modern_pipeline.scripts.fetch_eurostat_gas_imports
@@ -519,9 +643,21 @@ python3 -m modern_pipeline.scripts.compare_legacy_country_data \
 ```
 
 The comparison uses `isoYear`/`isoWeek`, matching the legacy weekly Figure 1
-construction. For manifests with `flowConcept`, it uses `net_import` for UK and
-`gross_import` for the other source groups. It writes:
+construction. For manifests with `flowConcept`, it uses `net_import` for UK in
+the overview file and `gross_import` for the other source groups. Outputs go in
+`modern_pipeline/snapshots/legacy_country_data/`: an `overview` CSV/plot of all
+sources, plus one CSV, line plot, and difference plot per source. UK is written
+as dedicated gross and net files rather than a single Figure 1 panel.
 
 ```text
-modern_pipeline/snapshots/legacy_country_data_comparison.csv
+modern_pipeline/snapshots/legacy_country_data/overview.csv
+modern_pipeline/snapshots/legacy_country_data/overview_lines.png
+modern_pipeline/snapshots/legacy_country_data/russia_lines.png
+modern_pipeline/snapshots/legacy_country_data/norway_lines.png
+modern_pipeline/snapshots/legacy_country_data/uk_gross_lines.png
+modern_pipeline/snapshots/legacy_country_data/uk_net_lines.png
 ```
+
+The UK gross files compare modern `gross_import` with the `UK_YYYY` columns
+on `EU27 gross imports `. The UK net files compare modern `net_import` with
+`EU_UK_net_YYYY` on `EU27 net UK imports`.
