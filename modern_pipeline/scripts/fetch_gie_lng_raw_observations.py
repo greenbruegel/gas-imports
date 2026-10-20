@@ -16,6 +16,7 @@ from pymongo.errors import PyMongoError
 from requests import JSONDecodeError, RequestException
 
 from modern_pipeline.db import get_database
+from modern_pipeline.lng_quality import capacity_check
 
 GIE_ALSI_API_URL = "https://alsi.gie.eu/api"
 DEFAULT_MANIFEST_VERSION = "gie_alsi_lng_terminals_v1"
@@ -345,6 +346,7 @@ def normalize_observation(row: Dict[str, Any], entry: Dict[str, Any], fetched_at
         "gasDayStart": row.get("gasDayStart"),
         "sendOutGwhPerDay": send_out_gwh,
         "valueGwh": send_out_gwh,
+        "capacityCheck": capacity_check(send_out_gwh, clean_float(row.get("dtrs"))),
         "valueMcm": None if send_out_gwh is None else send_out_gwh / DEFAULT_LNG_GWH_PER_MCM,
         "converterGwhPerMcm": DEFAULT_LNG_GWH_PER_MCM,
         "inventoryThousandM3Lng": clean_float(row.get("inventory")),
@@ -504,6 +506,14 @@ def main() -> None:
                 if (obs := normalize_observation(row, entry=entry, fetched_at=fetched_at))
             ]
             stats = upsert_observations(args.collection, observations)
+            for obs in observations:
+                if obs["capacityCheck"]["status"] == "invalid":
+                    print(
+                        f"WARNING: invalid LNG send-out: {obs['facilityName']} "
+                        f"{obs['gasDay'].date()} {obs['valueGwh']} GWh/day exceeds "
+                        f"200% of capacity ({obs['technicalSendoutCapacityGwhPerDay']} GWh/day).",
+                        file=sys.stderr,
+                    )
             total_rows += len(observations)
             total_modified += stats["modified"]
             total_upserted += stats["upserted"]

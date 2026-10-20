@@ -424,6 +424,26 @@ legacy LNG scripts: `sendOut`, `inventory`, `dtmi`, and `dtrs`.
 
 ## Materialize Daily LNG Plotting Series
 
+Raw observations may carry a manual `qualityOverride`. When
+`sourceValueInvalid=true`, the materializer uses only `replacementGwh` (or
+omits the observation if no replacement is supplied), preserving the reported
+source fields. Affected output rows include `qualityOverrides` for audit.
+The fetcher's source upserts preserve this separate override field.
+
+Send-out strictly greater than 200% of the same day's reported technical
+send-out capacity (`dtrs`) is flagged with `capacityCheck.status=invalid` on
+ingestion and logged as a warning. Missing, non-finite, or non-positive capacity
+is marked `not_checked`. Materialization repeats the check for existing raw
+records, excluding violations without a manual replacement and marking affected
+totals `isIncomplete=true` with `excludedObservations`. No automatic estimate
+is applied. Exactly 200% is allowed. A later source fetch recomputes the automatic
+flag; manual overrides remain in force until explicitly reviewed and removed.
+
+On 5 October 2026, Ravenna reported 100,000 GWh/day against a reported capacity
+of 146.7 GWh/day. That observation is flagged invalid and replaced for
+aggregation with 25.05 GWh, interpolated from 25.0 GWh on 4 October and
+25.1 GWh on 6 October. This is an estimate, not a corrected source report.
+
 Build daily LNG rows in `gas_import_daily` from `gie_lng_raw_observations` and
 the ALSI terminal manifest:
 
@@ -661,3 +681,13 @@ modern_pipeline/snapshots/legacy_country_data/uk_net_lines.png
 The UK gross files compare modern `gross_import` with the `UK_YYYY` columns
 on `EU27 gross imports `. The UK net files compare modern `net_import` with
 `EU_UK_net_YYYY` on `EU27 net UK imports`.
+
+## Russian transit through Ukraine
+
+The pipeline materializer sets Russia / Ukraine Gas Transit contributions to
+zero from 1 January 2025, when Russian transit ended. Ukrainian border entries
+can now represent storage re-exports and must not be attributed to Russia.
+This correction also applies to the Russia source total and pipeline total;
+raw ENTSOG observations are preserved. Rebuild existing `legacy_excel_v4`
+curated rows from 2025 onward to apply the correction to published data.
+Pre-2025 attribution remains unchanged and may include storage re-exports.

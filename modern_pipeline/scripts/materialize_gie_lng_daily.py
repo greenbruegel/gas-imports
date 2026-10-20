@@ -5,12 +5,14 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import time
+import warnings
 from collections import defaultdict
 from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from pymongo import UpdateOne
 
 from modern_pipeline.db import get_database
+from modern_pipeline.lng_quality import capacity_check
 
 DEFAULT_MANIFEST_VERSION = "gie_alsi_lng_terminals_v1"
 DEFAULT_CONVERTER_GWH_PER_MCM = 11.58
@@ -180,6 +182,8 @@ def fetch_raw_daily(
         "valueMcm": 1,
         "countryIso2": 1,
         "facilityName": 1,
+        "qualityOverride": 1,
+        "technicalSendoutCapacityGwhPerDay": 1,
     }
     return list(db[raw_collection_name].find(query, projection).sort([("gasDay", 1), ("facilityEic", 1)]))
 
@@ -236,6 +240,7 @@ def materialize_rows(
 ) -> List[Dict[str, Any]]:
     entry_by_facility = {entry["facilityEic"]: entry for entry in entries}
     aggregates: Dict[Tuple[dt.datetime, str, str], Dict[str, Any]] = {}
+    excluded = []
 
     for raw in raw_rows:
         facility_eic = raw.get("facilityEic")
@@ -243,9 +248,24 @@ def materialize_rows(
         gas_day = raw.get("gasDay")
         if not entry or not isinstance(gas_day, dt.datetime):
             continue
-        value = raw.get("valueGwh")
-        if value in (None, ""):
-            value = raw.get("sendOutGwhPerDay")
+        override = raw.get("qualityOverride") or {}
+        if override.get("sourceValueInvalid"):
+            # Keep the source observation intact; only use an explicit estimate.
+            value = override.get("replacementGwh")
+        else:
+            value = raw.get("valueGwh")
+            if value in (None, ""):
+                value = raw.get("sendOutGwhPerDay")
+            check = capacity_check(value, raw.get("technicalSendoutCapacityGwhPerDay"))
+            if check["status"] == "invalid":
+                excluded.append((day_key(gas_day), entry.get("countryIso2") or raw.get("countryIso2") or "Unknown", facility_eic, check))
+                warnings.warn(
+                    f"Excluded invalid LNG send-out: {facility_eic} "
+                    f"{gas_day.date()} {value} GWh/day exceeds 200% of capacity "
+                    f"({check['capacityGwhPerDay']} GWh/day). No replacement recorded.",
+                    stacklevel=2,
+                )
+                continue
         if value in (None, ""):
             continue
         try:
@@ -277,8 +297,27 @@ def materialize_rows(
                 )
                 aggregates[agg_key] = target
             add_value(target, value_gwh, facility_eic)
+            if override.get("sourceValueInvalid"):
+                target.setdefault("qualityOverrides", []).append(
+                    {"facilityEic": facility_eic, **override}
+                )
 
     rows = []
+    for day, country, facility, check in excluded:
+        keys = [("source_group", "LNG"), ("source_group_country", f"LNG:{country}")]
+        if include_facilities:
+            keys.append(("facility", f"LNG:{facility}"))
+        for level, key in keys:
+            agg_key = (day, level, key)
+            if agg_key not in aggregates:
+                aggregates[agg_key] = init_aggregate(manifest_version, day, level, key, key, converter)
+            target = aggregates[agg_key]
+            target.setdefault("excludedObservations", []).append({"facilityEic": facility, **check})
+    for row in aggregates.values():
+        # Always write these fields so later corrected data clears stale flags.
+        row.setdefault("excludedObservations", [])
+        row.setdefault("qualityOverrides", [])
+        row["isIncomplete"] = bool(row["excludedObservations"])
     for row in aggregates.values():
         row["valueKwh"] = row["valueGwh"] * 1_000_000.0
         row["valueTwh"] = row["valueGwh"] / 1_000.0

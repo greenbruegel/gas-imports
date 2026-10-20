@@ -14,6 +14,7 @@ from modern_pipeline.db import get_database
 
 DEFAULT_MANIFEST_VERSION = "legacy_excel_v1"
 DEFAULT_CONVERTER_KWH_PER_MCM = 10_300_000.0
+RUSSIAN_UKRAINE_TRANSIT_END = dt.datetime(2025, 1, 1)
 
 
 def parse_args() -> argparse.Namespace:
@@ -332,6 +333,16 @@ def materialize_rows(
             continue
         source_group = entry.get("sourceGroup") or "Unknown"
         flow_concept = entry.get("flowConcept") or "gross_import"
+
+        # EU entries from Ukraine can be storage re-exports. Russian transit
+        # ended on 1 January 2025; these borders no longer identify Russian gas.
+        # Keep explicit zero route rows and preserve the raw observations.
+        if (
+            source_group == "Russia"
+            and entry.get("routeGroup") == "Ukraine Gas Transit"
+            and day >= RUSSIAN_UKRAINE_TRANSIT_END
+        ):
+            signed_value = 0.0
 
         if is_counterflow:
             keys = [("source_group_counterflow", source_group, source_group, "counterflow_export")]
