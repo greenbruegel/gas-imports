@@ -894,7 +894,6 @@ month,origin,originGroup,region,valueTonnes,valueMcm
 2025-01-31,Algeria,Algeria,Africa,228800.25,315.744345
 2025-01-31,Angola,Other,Africa,132979.5,183.51171
 2025-01-31,Cameroon,Other,Africa,62094.15,85.689927
-2025-01-31,"Congo, Republic",Other,Other,57985.65,80.020197
 2025-01-31,Equatorial Guinea,Other,Africa,71886.15,99.20288699999999
 2025-01-31,Nigeria,Nigeria,Africa,620547.75,856.3558949999999
 2025-01-31,Norway,Norway,Other,197764.2,272.914596
@@ -917,13 +916,14 @@ month,origin,originGroup,region,valueTonnes,valueMcm
 2025-03-31,Algeria,Algeria,Africa,529618.05,730.8729089999999
 2025-03-31,Angola,Other,Africa,332399.25,458.710965
 2025-03-31,Australia,Other,Other,70700.85,97.567173
+2025-03-31,Egypt,Egypt,Africa,71976.6,99.327708
 2025-03-31,Equatorial Guinea,Other,Africa,146141.1,201.67471799999998
 2025-03-31,Nigeria,Nigeria,Africa,546292.35,753.8834429999999
 2025-03-31,Norway,Norway,Other,262171.575,361.7967735
 2025-03-31,Qatar,Qatar,Middle East,1025206.2,1414.7845559999998
 2025-03-31,Russia,Russia,Russia,1289916.45,1780.0847009999998
 2025-03-31,Trinidad & Tobago,Trinidad & Tobago,America,71040.15,98.03540699999999
-2025-03-31,United States,United States,America,5315213.925,7334.9952164999995
+2025-03-31,United States,United States,America,5280146.325,7286.6019285
 2025-03-31,Virgin Islands (U.S.A.),Other,Other,73632.15,101.61236699999999
 2025-04-30,Algeria,Algeria,Africa,493222.5,680.6470499999999
 2025-04-30,Angola,Other,Africa,132695.1,183.119238
@@ -1029,7 +1029,7 @@ month,origin,originGroup,region,valueTonnes,valueMcm
 2026-01-31,Algeria,Algeria,Africa,157009.95,216.673731
 2026-01-31,"Congo, Republic",Other,Other,58171.95,80.27729099999999
 2026-01-31,Nigeria,Nigeria,Africa,402729.75,555.767055
-2026-01-31,Norway,Norway,Other,390646.8,539.092584
+2026-01-31,Norway,Norway,Other,392246.10000000003,541.299618
 2026-01-31,Peru,Other,Other,70636.05,97.477749
 2026-01-31,Qatar,Qatar,Middle East,413715.6,570.9275279999999
 2026-01-31,Russia,Russia,Russia,1649468.7,2276.266806
@@ -1042,11 +1042,11 @@ month,origin,originGroup,region,valueTonnes,valueMcm
 2026-02-28,Egypt,Egypt,Africa,35891.55,49.530339000000005
 2026-02-28,Indonesia,Other,Other,64003.95,88.32545099999999
 2026-02-28,Nigeria,Nigeria,Africa,789074.55,1088.922879
-2026-02-28,Norway,Norway,Other,403624.8,557.002224
+2026-02-28,Norway,Norway,Other,405229.05,559.216089
 2026-02-28,Oman,Other,Middle East,34946.325,48.225928499999995
 2026-02-28,Qatar,Qatar,Middle East,559428.3,772.0110540000001
 2026-02-28,Russia,Russia,Russia,1501347.6,2071.859688
-2026-02-28,Senegal,Other,Other,179592.52500000002,247.8376845
+2026-02-28,Senegal,Other,Other,179670.825,247.94573849999998
 2026-02-28,Trinidad & Tobago,Trinidad & Tobago,America,71678.25,98.91598499999999
 2026-02-28,United States,United States,America,5489107.425,7574.9682465
 2026-03-31,Algeria,Algeria,Africa,539896.0499999999,745.0565489999999
@@ -1056,7 +1056,7 @@ month,origin,originGroup,region,valueTonnes,valueMcm
 2026-03-31,Nigeria,Nigeria,Africa,603543.6,832.890168
 2026-03-31,Norway,Norway,Other,344436.75,475.32271499999996
 2026-03-31,Qatar,Qatar,Middle East,792315.9,1093.3959419999999
-2026-03-31,Russia,Russia,Russia,1782059.4,2459.241972
+2026-03-31,Russia,Russia,Russia,1782135.45,2459.346921
 2026-03-31,Senegal,Other,Other,72197.325,99.6323085
 2026-03-31,Trinidad & Tobago,Trinidad & Tobago,America,71532.9,98.71540199999998
 2026-03-31,United States,United States,America,5888644.875,8126.3299275
@@ -1068,7 +1068,7 @@ month,origin,originGroup,region,valueTonnes,valueMcm
 2026-04-30,Norway,Norway,Other,336346.65,464.15837700000003
 2026-04-30,Qatar,Qatar,Middle East,84442.05,116.530029
 2026-04-30,Russia,Russia,Russia,1571557.05,2168.748729
-2026-04-30,Senegal,Other,Other,71256.6,98.334108
+2026-04-30,Senegal,Other,Other,71333.55,98.440299
 2026-04-30,United States,United States,America,5931647.550000001,8185.673618999999
 2026-05-31,Algeria,Algeria,Africa,667517.4,921.174012
 2026-05-31,Angola,Other,Africa,66369.15,91.58942699999999
@@ -1087,22 +1087,30 @@ month,origin,originGroup,region,valueTonnes,valueMcm
 2026-06-30,Russia,Russia,Russia,1571827.5,2169.1219499999997
 2026-06-30,Senegal,Other,Other,144190.8,198.98330399999998
 2026-06-30,Trinidad & Tobago,Trinidad & Tobago,America,71637.3,98.859474
-2026-06-30,United States,United States,America,4180974.75,5769.745155
+2026-06-30,United States,United States,America,4181052.6,5769.852588
 2026-07-31,Algeria,Algeria,Africa,361779.3,499.255434
 2026-07-31,"Congo, Republic",Other,Other,57737.7,79.67802599999999
 2026-07-31,Nigeria,Nigeria,Africa,519946.65,717.5263769999999
 2026-07-31,Norway,Norway,Other,345940.65,477.398097
 2026-07-31,Peru,Other,Other,141534.0,195.31691999999998
-2026-07-31,Russia,Russia,Russia,920571.3,1270.388394
+2026-07-31,Russia,Russia,Russia,920713.95,1270.585251
 2026-07-31,Senegal,Other,Other,35904.375,49.5480375
 2026-07-31,Trinidad & Tobago,Trinidad & Tobago,America,144994.5,200.09241
-2026-07-31,United States,United States,America,3560676.75,4913.733915
+2026-07-31,United States,United States,America,3560753.6999999997,4913.840106
 2026-08-31,Algeria,Algeria,Africa,254876.85,351.730053
 2026-08-31,"Congo, Republic",Other,Other,57737.7,79.67802599999999
 2026-08-31,Nigeria,Nigeria,Africa,521148.15,719.184447
-2026-08-31,Norway,Norway,Other,497122.64999999997,686.0292569999999
+2026-08-31,Norway,Norway,Other,493920.89999999997,681.6108419999999
 2026-08-31,Peru,Other,Other,70870.05,97.800669
-2026-08-31,Russia,Russia,Russia,494467.2,682.364736
+2026-08-31,Russia,Russia,Russia,494983.35,683.0770229999999
 2026-08-31,Senegal,Other,Other,107785.575,148.7440935
 2026-08-31,Trinidad & Tobago,Trinidad & Tobago,America,288323.1,397.885878
-2026-08-31,United States,United States,America,5313997.8,7333.316964
+2026-08-31,United States,United States,America,5314074.3,7333.422533999999
+2026-09-30,Algeria,Algeria,Africa,321738.30000000005,443.998854
+2026-09-30,"Congo, Republic",Other,Other,129439.79999999999,178.62692399999997
+2026-09-30,Nigeria,Nigeria,Africa,489940.2,676.1174759999999
+2026-09-30,Norway,Norway,Other,295159.95,407.320731
+2026-09-30,Peru,Other,Other,70763.4,97.65349199999999
+2026-09-30,Russia,Russia,Russia,788315.3999999999,1087.8752519999998
+2026-09-30,Trinidad & Tobago,Trinidad & Tobago,America,214763.85,296.37411299999997
+2026-09-30,United States,United States,America,5196841.425,7171.6411665
